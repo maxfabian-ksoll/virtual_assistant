@@ -12,28 +12,23 @@ CREATE_CLIP_URL = "https://api.d-id.com/clips"
 GET_CLIP_URL = "https://api.d-id.com/clips"
 UPLOAD_AUDIO = "https://api.d-id.com/audios"
 DID_KEY = secrets.did
-MODEL = "gpt-3.5-turbo"
+MODEL = "gpt-4"
 openai.api_key = secrets.openai
 set_api_key(secrets.elevenlabs)
 
+history = []
+
 
 def ask_chat_gpt(message: str) -> str:
-    messages.history.append({"role": "user", "content": message})
+    history.append({"role": "user", "content": message})
 
     response = openai.ChatCompletion.create(
         model=MODEL,
-        messages=model.model + messages.history,
+        messages=model.model + history,
         temperature=0,
     )
     response_content = response["choices"][0]["message"]["content"]
-    messages.history.append({"role": "system", "content": response_content})
-
-    with open("messages.py", "w", encoding="unicode") as f:
-        f.write("history=[\n")
-        for line in messages.history:
-            f.write("    %s,\n" % line)
-        f.write("]\n")
-        f.close()
+    history.append({"role": "system", "content": response_content})
 
     return response_content
 
@@ -63,9 +58,8 @@ def generate_video(audio_respone: str) -> str:
             "type": "audio",
             "audio_url": audio_url
         },
-        "presenter_id": "matt",
-        # "driver_id": "img__77MJCYH_rqsmIx8nbg-g",
-        "background": {"color": "blue"}
+        "presenter_id": "amy-jcwCkr1grs",
+        "driver_id": "uM00QMwJ9x"
     }
 
     response = requests.post(CREATE_CLIP_URL, headers=headers, json=create_clip).json()

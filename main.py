@@ -10,6 +10,7 @@ import model
 
 CREATE_CLIP_URL = "https://api.d-id.com/clips"
 GET_CLIP_URL = "https://api.d-id.com/clips"
+UPLOAD_AUDIO = "https://api.d-id.com/audios"
 DID_KEY = secrets.did
 MODEL = "gpt-3.5-turbo"
 openai.api_key = secrets.openai
@@ -55,12 +56,19 @@ def generate_audio(message: str):
 
 def generate_video(path_to_audio: str):
     # print(create_video_from_audio("https://www.lightbulblanguages.co.uk/resources/ge-audio/beach-german.mp3"))
-
+    audio_headers = {
+        "accept": "application/json",
+        "content-type": "multipart/form-data",
+        "authorization": "Basic "+DID_KEY
+    }
+    response = requests.post(UPLOAD_AUDIO, headers=audio_headers).json()
+    print(response)
+    audio_url=response["url"]
     headers = {"Authorization": "Basic "+DID_KEY}
     create_clip = {
         "script": {
             "type": "audio",
-            "audio_url": path_to_audio
+            "audio_url": audio_url
         },
         "presenter_id": "amy-jcwCkr1grs",
         "driver_id": "uM00QMwJ9x"

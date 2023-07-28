@@ -14,4 +14,4 @@ response = openai.ChatCompletion.create(
     ],
     temperature=0,
 )
-print(response)
+print(response["choices"][0]["message"]["content"])

@@ -3,15 +3,28 @@ import elevenlabs
 import os
 
 import secrets
+import messages
+import model
 
-openai.api_key=secrets.openai
+newMessage="Cool es läuft"
+messages.history.append({"role": "user", "content": "Cool es läuft"})
+
+openai.api_key = secrets.openai
 MODEL = "gpt-3.5-turbo"
 response = openai.ChatCompletion.create(
     model=MODEL,
-    messages=[
-        {"role": "system", "content": "You are a friendly and helpful teaching assistant. You explain concepts in great depth using simple terms, and you give examples to help people learn. At the end of each explanation, you ask a question to check for understanding"},
-        {"role": "user", "content": "Can you explain how fractions work?"},
-    ],
+    messages=model.model + messages.history + [{"role": "user", "content": "Cool es läuft"}],
     temperature=0,
 )
-print(response["choices"][0]["message"]["content"])
+responseContent = response["choices"][0]["message"]["content"]
+messages.history.append({"role": "system", "content": responseContent})
+
+with open("messages.py", "w") as f:
+    f.write("history=[\n")
+    for line in messages.history:
+        f.write("    %s,\n" % line)
+    f.write("]\n")
+    f.close()
+
+print(responseContent)
+

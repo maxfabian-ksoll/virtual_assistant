@@ -42,9 +42,13 @@ def clone_voice(name: str, description, path_to_voices: list[pathlib.Path]):
     return voice
 
 
-def generate_audio(message: str) -> pathlib.Path:
+def generate_audio(message: str):
     audio = generate(text=message, voice="Isa", model="eleven_multilingual_v1")
     timestamp = time()
     path = pathlib.Path(rf"C:\Users\ksoll\Documents\GitProjects\virtual_assistant\audio_files\{timestamp}.mp3")
     save(audio, str(path.absolute()))
-    return path
+    return path, audio
+
+
+def generate_video(audio_path):
+    pass

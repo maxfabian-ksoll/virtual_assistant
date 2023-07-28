@@ -6,20 +6,20 @@ import secrets
 import messages
 import model
 
+MODEL = "gpt-3.5-turbo"
 
-def ask_chat_gpt(newMessage: str):
-    # newMessage="Cool es läuft"
-    messages.history.append({"role": "user", "content": "Cool es läuft"})
+
+def ask_chat_gpt(message: str):
+    messages.history.append({"role": "user", "content": message})
 
     openai.api_key = secrets.openai
-    MODEL = "gpt-3.5-turbo"
     response = openai.ChatCompletion.create(
         model=MODEL,
-        messages=model.model + messages.history + [{"role": "user", "content": "Cool es läuft"}],
+        messages=model.model + messages.history,
         temperature=0,
     )
-    responseContent = response["choices"][0]["message"]["content"]
-    messages.history.append({"role": "system", "content": responseContent})
+    response_content = response["choices"][0]["message"]["content"]
+    messages.history.append({"role": "system", "content": response_content})
 
     with open("messages.py", "w") as f:
         f.write("history=[\n")
@@ -28,6 +28,6 @@ def ask_chat_gpt(newMessage: str):
         f.write("]\n")
         f.close()
 
-    print(responseContent)
-    return responseContent
+    return response_content
 
+print(ask_chat_gpt("Cool es läuft"))

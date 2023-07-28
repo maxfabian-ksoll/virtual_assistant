@@ -1,7 +1,7 @@
 import openai
 import requests
 from elevenlabs import clone, generate, set_api_key, save
-from time import time
+from time import time, sleep
 
 import pathlib
 import secrets
@@ -28,7 +28,7 @@ def ask_chat_gpt(message: str) -> str:
     response_content = response["choices"][0]["message"]["content"]
     messages.history.append({"role": "system", "content": response_content})
 
-    with open("messages.py", "w") as f:
+    with open("messages.py", "w", encoding="unicode") as f:
         f.write("history=[\n")
         for line in messages.history:
             f.write("    %s,\n" % line)
@@ -54,28 +54,34 @@ def generate_audio(message: str):
     save(audio, str(path.absolute()))
     return path, audio
 
-def generate_video(path_to_audio: str):
-    # print(create_video_from_audio("https://www.lightbulblanguages.co.uk/resources/ge-audio/beach-german.mp3"))
-    audio_headers = {
-        "accept": "application/json",
-        "content-type": "multipart/form-data",
-        "authorization": "Basic "+DID_KEY
-    }
-    response = requests.post(UPLOAD_AUDIO, headers=audio_headers).json()
-    print(response)
-    audio_url=response["url"]
-    headers = {"Authorization": "Basic "+DID_KEY}
+
+def generate_video(audio_respone: str) -> str:
+    audio_url = audio_respone["url"]
+    headers = {"Authorization": "Basic " + DID_KEY}
     create_clip = {
         "script": {
             "type": "audio",
             "audio_url": audio_url
         },
-        "presenter_id": "amy-jcwCkr1grs",
-        "driver_id": "uM00QMwJ9x"
+        "presenter_id": "matt",
+        # "driver_id": "img__77MJCYH_rqsmIx8nbg-g",
+        "background": {"color": "blue"}
     }
+
     response = requests.post(CREATE_CLIP_URL, headers=headers, json=create_clip).json()
-    print(response)
     clip_id = response["id"]
     clip = requests.get(GET_CLIP_URL + "/" + clip_id, headers=headers).json()
-    print(clip)
+    while dict(clip).get("result_url", None) is None:
+        clip = requests.get(GET_CLIP_URL + "/" + clip_id, headers=headers).json()
+        sleep(0.2)
     return clip["result_url"]
+
+
+def upload_audio(path_to_audio):
+    audio_headers = {
+        "accept": "application/json",
+        "authorization": "Basic " + DID_KEY
+    }
+    files = {"audio": (pathlib.Path(path_to_audio).name, open(path_to_audio, "rb"), "audio/mpeg")}
+    response = requests.post(UPLOAD_AUDIO, headers=audio_headers, files=files).json()
+    return response

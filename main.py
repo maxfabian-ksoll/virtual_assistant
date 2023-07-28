@@ -1,4 +1,5 @@
 import openai
+import requests
 from elevenlabs import clone, generate, set_api_key, save
 from time import time
 
@@ -7,6 +8,9 @@ import secrets
 import messages
 import model
 
+CREATE_CLIP_URL = "https://api.d-id.com/clips"
+GET_CLIP_URL = "https://api.d-id.com/clips"
+DID_KEY = secrets.did
 MODEL = "gpt-3.5-turbo"
 openai.api_key = secrets.openai
 set_api_key(secrets.elevenlabs)
@@ -49,6 +53,21 @@ def generate_audio(message: str):
     save(audio, str(path.absolute()))
     return path, audio
 
+def generate_video(path_to_audio: str):
+    # print(create_video_from_audio("https://www.lightbulblanguages.co.uk/resources/ge-audio/beach-german.mp3"))
 
-def generate_video(audio_path):
-    pass
+    headers = {"Authorization": "Basic "+DID_KEY}
+    create_clip = {
+        "script": {
+            "type": "audio",
+            "audio_url": path_to_audio
+        },
+        "presenter_id": "amy-jcwCkr1grs",
+        "driver_id": "uM00QMwJ9x"
+    }
+    response = requests.post(CREATE_CLIP_URL, headers=headers, json=create_clip).json()
+    print(response)
+    clip_id = response["id"]
+    clip = requests.get(GET_CLIP_URL + "/" + clip_id, headers=headers).json()
+    print(clip)
+    return clip["result_url"]
